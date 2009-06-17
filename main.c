@@ -51,6 +51,7 @@ typedef struct {
     
 
 
+unsigned int  SubBytes(unsigned int, unsigned int, unsigned int);
 
 
 /*****************************************************************************/
