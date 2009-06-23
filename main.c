@@ -14,44 +14,24 @@
 /* Entrees/sorties standard */
 #include <stdio.h>
 
+/* Definitions supplementaire */
+#define u32 unsigned int 
 
 
-    /* 
-        TODO: A placer dans un include 
-    */
-
-/* Premières définitions */
-
-#define KEY_SIZE 16
-
-#define KEY_ROUNDS 12
-
-typedef struct {
-
-    /* Pointeur sur les données à crypter */
-    char * data;
-
-    /* Taille des données, doit etre un multiple de 16. A l'implementation de padder. */
-    int ln;
-
-    /* Pointeur sur la clé, eventuellement de taille quelconque */
-    char key[KEY_SIZE];
-
-    /* Tableau contenant les différentes variantes de clé */
-    char round_keys[KEY_ROUNDS][KEY_SIZE];
-
-} options;
+#define BIT_SSE      0
+#define BIT_SSE2     1
+#define BIT_SSE3     2
+#define BIT_SSSE3    3
+#define BIT_SSE4_1   4
+#define BIT_SSE4_2   5
 
 
 
 
-    /* 
-       TODO end
-    */
-    
-
-
-unsigned int  SubBytes(unsigned int, unsigned int, unsigned int);
+/* Prototypes de fonctions à utiliser en assemblxmeur */
+// Le cdecl est utilisé pour etre sur de ne pas defaulter en stdcall (gcc rajouterait des manips sur la pile)
+u32 SubBytes(u32, u32, u32 *) __attribute__ ((cdecl)) ;
+u32 AesInit(void) __attribute__ ((cdecl)) ;
 
 
 /*****************************************************************************/
@@ -63,25 +43,63 @@ int main(
 {
 
 
-    options mesOptions;
 
-    
-    /* Recuperation des infos eventuelles de fichiers de config */
-    getConfig(&mesOptions);
-    
-    /* Parsage des arguments de la ligne de commande : 
-     override les infos des fichiers de config                  */
-    parse_args(argc, argv, &mesOptions);
+	u32 res;
+	u32 a = 1, b = 2;
+	u32 * c;
 
-    // TODO: A ce moment je me dis que pourquoi pas le C++.
-    /* En effet, on pourrait tres bien imaginer l'initialisation
-       en CONSTRUISANT la classe infos,
-       pui utiliser les méthodes de la classe en mode
-       options.generateRoundKeys();
-       options.digest() pour crypter
-       et ainsi de suite.
-    */
+	u32 caca = 8;
 
+	c = &caca;
+
+	printf("/==================================================\n\n");
+	printf("/  PROJET AES          ============================\n\n");
+	printf("/==================================================\n");
+
+	printf("Test appel fonction ASM :");
+	res = SubBytes(a,b,(u32 *)c);
+	printf("a = %d, b = %d\n",a,b);
+	printf("res ( a + b + 1 )  = %d\n",res);
+	printf("*c ( a + b ) = %d\n",*c);
+
+	printf("Identification processeur	:	\n");
+	res = AesInit();
+	
+	printf("SSE	:	");
+	if( res && BIT_SSE)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
+
+	printf("SSE2	:	");
+	if( res && BIT_SSE2)
+		printf("present.\n");		
+	else
+		printf("absent.\n");		
+
+	printf("SSE3	:	");
+	if( res && BIT_SSE3)
+		printf("present.\n");		
+	else
+		printf("absent.\n");		
+
+	printf("SSSE3	:	");
+	if( res && BIT_SSSE3)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
+	
+	printf("SSE4.1	:	");
+	if( res && BIT_SSE4_1)
+		printf("present.\n");		
+	else
+		printf("absent.\n");			
+
+	printf("SSE4.2	:	");
+	if( res && BIT_SSE4_2)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
     
     return 0;
 }

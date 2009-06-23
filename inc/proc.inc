@@ -68,13 +68,14 @@ epilogue@proc equ epiloguedef
 
 macro epiloguedef procname,flag,parmbytes,localbytes,reglist
  { irps reg, reglist \{ reverse pop reg \}
-   if parmbytes | localbytes
-    leave
+   if localbytes
+    add esp, localbytes
+	pop ebp
    end if
    if flag and 10000b
     retn
    else
-    retn parmbytes
+    retn ;parmbytes
    end if }
 
 macro define@proc name,statement
