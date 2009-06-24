@@ -14,11 +14,16 @@
 /* Entrees/sorties standard */
 #include <stdio.h>
 
+/* Definitions supplementaire */
+#define u32 unsigned int 
+#define u16 unsigned short 
 
-
-    /* 
-        TODO: A placer dans un include 
-    */
+#define BIT_SSE      0
+#define BIT_SSE2     1
+#define BIT_SSE3     2
+#define BIT_SSSE3    3
+#define BIT_SSE4_1   4
+#define BIT_SSE4_2   5
 
 /* Premières définitions */
 #define KEY_SIZE	4
@@ -36,8 +41,13 @@ typedef struct {
 
 aes_keys keys;
 
+/* Prototypes de fonctions à utiliser en assemblxmeur */
+// Le cdecl est utilisé pour etre sur de ne pas defaulter en stdcall (gcc rajouterait des manips sur la pile)
+u32 SubBytes(u32, u32, u32 *) __attribute__ ((cdecl)) ;
+u32 AesInit(void) __attribute__ ((cdecl)) ;
+
 /* Rijnadel S-Box utilisee pour realiser l'operation SubBytes de l'algorithme AES */
-const unsigned short rij_sbox[] = {
+const u16 rij_sbox[] = {
 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76, 
 	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0, 
 	0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15, 
@@ -57,7 +67,7 @@ const unsigned short rij_sbox[] = {
 };
 
 /* Rijnadel Inverse S-Box utilisee pour realiser l'operation InvSubBytes de l'algorithme AES */
-const unsigned short rij_invsbox[] = {
+const u16 rij_invsbox[] = {
 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38, 0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb, 
 	0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87, 0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb, 
 	0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d, 0xee, 0x4c, 0x95, 0x0b, 0x42, 0xfa, 0xc3, 0x4e, 
@@ -77,7 +87,7 @@ const unsigned short rij_invsbox[] = {
 };	
 
 
-int aes_Subbytes( int val ) {
+u16 aes_Subbytes( u16 val ) {
 	return rij_sbox[ val ];
 }
 
@@ -108,21 +118,11 @@ void aes_generate_roundkeys( void ) {
 }
 
 
-void aes_setkey( int key[KEY_SIZE] ) {
+void aes_setkey( /*int key[KEY_SIZE]*/ ) {
 	// memcpy( aes_keys.key , key , KEY_SIZE*4 );
 
 	// aes_generate_roundkeys( );
 }
-
-
-
-    /* 
-       TODO end
-    */
-    
-
-
-
 
 /*****************************************************************************/
 
@@ -131,27 +131,62 @@ int main(
         char ** argv
         )
 {
+	u32 res;
+	u32 a = 1, b = 2;
+	u32 * c;
 
+	u32 caca = 8;
 
-//    options mesOptions;
+	c = &caca;
 
-    
-    /* Recuperation des infos eventuelles de fichiers de config */
-//    getConfig(&mesOptions);
-    
-    /* Parsage des arguments de la ligne de commande : 
-     override les infos des fichiers de config                  */
-//    parse_args(argc, argv, &mesOptions);
+	printf("/==================================================\n\n");
+	printf("/  PROJET AES          ============================\n\n");
+	printf("/==================================================\n");
 
-    // TODO: A ce moment je me dis que pourquoi pas le C++.
-    /* En effet, on pourrait tres bien imaginer l'initialisation
-       en CONSTRUISANT la classe infos,
-       pui utiliser les méthodes de la classe en mode
-       options.generateRoundKeys();
-       options.digest() pour crypter
-       et ainsi de suite.
-    */
+	printf("Test appel fonction ASM :");
+	res = SubBytes(a,b,(u32 *)c);
+	printf("a = %d, b = %d\n",a,b);
+	printf("res ( a + b + 1 )  = %d\n",res);
+	printf("*c ( a + b ) = %d\n",*c);
 
+	printf("Identification processeur	:	\n");
+//	res = AesInit();
+	
+	printf("SSE	:	");
+	if( res && BIT_SSE)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
+
+	printf("SSE2	:	");
+	if( res && BIT_SSE2)
+		printf("present.\n");		
+	else
+		printf("absent.\n");		
+
+	printf("SSE3	:	");
+	if( res && BIT_SSE3)
+		printf("present.\n");		
+	else
+		printf("absent.\n");		
+
+	printf("SSSE3	:	");
+	if( res && BIT_SSSE3)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
+	
+	printf("SSE4.1	:	");
+	if( res && BIT_SSE4_1)
+		printf("present.\n");		
+	else
+		printf("absent.\n");			
+
+	printf("SSE4.2	:	");
+	if( res && BIT_SSE4_2)
+		printf("present.\n");		
+	else
+		printf("absent.\n");	
     
     return 0;
 }
