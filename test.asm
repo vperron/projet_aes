@@ -10,7 +10,7 @@ format ELF
 
 
 ; Include standard defs with proc, .if, etc
-include 'default.inc'
+include 'inc/default.inc'
 
 
 

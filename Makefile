@@ -1,7 +1,7 @@
 CC = gcc
 LD = gcc
 
-
+CFLAGS = -g -Wall
 PROGRAM = projaes
 
 OBJS = main.o test.o 
@@ -14,6 +14,7 @@ $(PROGRAM): $(OBJS)
 
 clean:
 	rm -f *.o
+	rm -f projaes
 
 %.o: %.asm
 	fasm $<
