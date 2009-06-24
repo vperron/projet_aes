@@ -4,7 +4,7 @@ LD = gcc
 CFLAGS = -g -Wall
 PROGRAM = projaes
 
-OBJS = main.o test.o 
+OBJS = main.o aes.o 
 
 
 all: $(PROGRAM)

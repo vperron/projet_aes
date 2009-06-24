@@ -72,8 +72,11 @@ aes_keys keys = {
 
 /* Prototypes de fonctions à utiliser en assemblxmeur */
 // Le cdecl est utilisé pour etre sur de ne pas defaulter en stdcall (gcc rajouterait des manips sur la pile)
-u32 SubBytes(u32, u32, u32 *) __attribute__ ((cdecl)) ;
+//u32 SubBytes(u32, u32, u32 *) __attribute__ ((cdecl)) ;
 u32 AesInit(void) __attribute__ ((cdecl)) ;
+u32 SetState( u32* ) __attribute__ ((cdecl)) ;
+u32 DumpState( u32* ) __attribute__ ((cdecl)) ;
+u32 SubBytes( u32 a, u32 b, u32* c ) __attribute__ ((cdecl)) ;
 
 /* Rijnadel S-Box utilisee pour realiser l'operation SubBytes de l'algorithme AES */
 const u16 rij_sbox[] = {
@@ -201,8 +204,22 @@ void aes_setkey( /*int key[KEY_SIZE]*/ ) {
 	// aes_generate_roundkeys( );
 }
 
-/*****************************************************************************/
 
+u32 StateOne[4] = { 
+	0xabcdabcd,
+	0x12341234,
+	0x12345678,
+	0x1f2f3f4f
+};
+
+u32 StateTwo[4] = { 
+	0x00000000,
+	0x00000000,
+	0x00000000,
+	0x00000000
+};
+
+/*****************************************************************************/
 int main(
         int argc, 
         char ** argv
@@ -215,6 +232,7 @@ int main(
 	u32 caca = 8;
 
 	c = &caca;
+
 aes_generate_roundkeys( );
 aes_print_round_keys( );
 
@@ -233,7 +251,7 @@ aes_print_round_keys( );
 	
 	printf("SSE	:	");
 	if( res && BIT_SSE)
-		printf("present.\n");		
+		printf("present.\n");	
 	else
 		printf("absent.\n");	
 
@@ -266,6 +284,16 @@ aes_print_round_keys( );
 		printf("present.\n");		
 	else
 		printf("absent.\n");	
-    
+
+//	res = SetState( StateOne );
+	res = DumpState( (u32*) c );
+	printf(" coucou \n ");
+	/*
+	for ( a = 0 ; a < 4 ; a++ ) {
+		printf( "Val %i %x" , a, StateTwo[a] ); 
+	}
+*/
+
+	
     return 0;
 }
