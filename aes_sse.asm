@@ -78,7 +78,6 @@ endp
 ;      Debug Function : DumpState : Extract current state value into Memory
 ;==============================================================================
 proc DumpState, v1
-local l:DWORD
 	mov	eax, [v1]
 	movups	[eax], xmm0
 
@@ -89,7 +88,6 @@ endp
 ;      Debug function : SetState : Load state value from memory
 ;==============================================================================
 proc SetState, v1
-;local l:DWORD
 	mov	eax, [v1]
 	movups	xmm0, [eax]
 
@@ -101,7 +99,6 @@ endp
 ;==============================================================================
 proc SubBytes, v1, v2, v3
 
-local tamere:DWORD
 
 	mov	eax, [v1]
 	mov	ebx, [v2]
