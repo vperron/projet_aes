@@ -105,9 +105,21 @@ int main(
 	printf("Generation Terminee ...\n");
 	aes_print_round_keys( );
 
+	
+
 	printf("Chargement d'une valeur de test dans l'etat\n");
-	res = SetState( StateOne );
-	res = DumpState( (u32*) StateTwo );
+	res = SetState( (u32*) StateOne );
+
+	DumpState( (u32*) StateTwo );
+
+	//printf("Test de la valeur chargee :\n");
+	/*for ( a = 0 ; a < 0 ; a++ ) {
+		printf( "Val %i %x\n" , a, StateTwo[a] ); 
+	}*/
+
+	ShiftRows( );
+
+	DumpState( (u32*) StateTwo );
 
 	printf("Test de la valeur chargee :\n");
 	for ( a = 0 ; a < 4 ; a++ ) {

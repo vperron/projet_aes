@@ -18,6 +18,8 @@ public  SetState
 public  AesInit
 public  SubBytes
 public  DumpState
+public  AddRoundKey
+public	ShiftRows
 
 section '.text' executable
 ;==============================================================================
@@ -75,6 +77,30 @@ endp
 
 
 ;==============================================================================
+;      Function : AddRoundKey : Load Memory-mapped RoundKey and performs encryption
+;==============================================================================
+proc AddRoundKey, v1
+	mov	eax, [v1]
+
+	; Load RoundKey into xmm1
+	movups	xmm1, [eax]
+
+	; Performs XOR-based encryption
+	xorps	xmm0, xmm1
+
+	ret
+endp
+
+;==============================================================================
+;      Function : ShiftRows : Performs Cyclic Permutation on rows
+;==============================================================================
+proc ShiftRows
+	lea	eax, [shiftable]
+	movups	xmm1, [eax]
+	pshufb	xmm0, xmm1
+endp
+
+;==============================================================================
 ;      Debug Function : DumpState : Extract current state value into Memory
 ;==============================================================================
 proc DumpState, v1
@@ -113,13 +139,15 @@ proc SubBytes, v1, v2, v3
     ret
 endp
 
+section '.data' writeable align 16
+; Acces : [matable+n*octets]
+matable db 	01h, 02h, 03h
+	db	04h 
 
-
-
-
-
-
-section '.data' writeable
+shiftable db	0fh, 0eh, 0dh, 0ch
+	  db	0ah, 09h, 08h, 0bh
+	  db	05h, 04h, 07h, 06h
+	  db	00h, 03h, 02h, 01h
 
 msg db 'Hello world!',0xA
 msg_size = $-msg

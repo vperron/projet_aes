@@ -18,6 +18,8 @@ typedef struct {
 
 } aes_keys;
 
+extern aes_keys keys;
+
 /* Prototypes de fonctions à utiliser en assemblxmeur
  * Le cdecl est utilisé pour etre sur de ne pas defaulter 
  * en stdcall (gcc rajouterait des manips sur la pile)
@@ -26,6 +28,8 @@ u32 AesInit(void) __attribute__ ((cdecl)) ;
 u32 SetState( u32* ) __attribute__ ((cdecl)) ;
 u32 DumpState( u32* ) __attribute__ ((cdecl)) ;
 u32 SubBytes( u32 a, u32 b, u32* c ) __attribute__ ((cdecl)) ;
+u32 AddRoundKey( u32* rndKey ) __attribute__ ((cdecl)) ;
+u32 ShiftRows( void ) __attribute__ ((cdecl)) ;
 
 void aes_print_round_keys( void );
 void aes_generate_roundkeys( void );
