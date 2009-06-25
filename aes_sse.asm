@@ -98,6 +98,8 @@ proc ShiftRows
 	lea	eax, [shiftable]
 	movups	xmm1, [eax]
 	pshufb	xmm0, xmm1
+
+	ret
 endp
 
 ;==============================================================================
@@ -144,10 +146,10 @@ section '.data' writeable align 16
 matable db 	01h, 02h, 03h
 	db	04h 
 
-shiftable db	0fh, 0eh, 0dh, 0ch
-	  db	0ah, 09h, 08h, 0bh
+shiftable db	00h, 03h, 02h, 01h
 	  db	05h, 04h, 07h, 06h
-	  db	00h, 03h, 02h, 01h
+	  db	0ah, 09h, 08h, 0bh
+	  db	0fh, 0eh, 0dh, 0ch
 
 msg db 'Hello world!',0xA
 msg_size = $-msg

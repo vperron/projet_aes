@@ -112,10 +112,10 @@ int main(
 
 	DumpState( (u32*) StateTwo );
 
-	//printf("Test de la valeur chargee :\n");
-	/*for ( a = 0 ; a < 0 ; a++ ) {
+	printf("Test de la valeur chargee :\n");
+	for ( a = 0 ; a < 4 ; a++ ) {
 		printf( "Val %i %x\n" , a, StateTwo[a] ); 
-	}*/
+	}
 
 	ShiftRows( );
 
