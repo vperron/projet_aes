@@ -89,7 +89,7 @@ endp
 ;      Debug function : SetState : Load state value from memory
 ;==============================================================================
 proc SetState, v1
-local l:DWORD
+;local l:DWORD
 	mov	eax, [v1]
 	movups	xmm0, [eax]
 
