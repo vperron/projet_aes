@@ -92,6 +92,62 @@ proc AddRoundKey, v1
 endp
 
 ;==============================================================================
+;      Function : MixColumns
+;==============================================================================
+proc MixColumns
+	movups	xmm1, xmm0
+
+	; Selectionne la premiere colonne
+	; et la duplique dans xmm2
+	lea	eax, [mask1]
+	movups	xmm6, [eax]
+	andps	xmm1, xmm6
+
+	movups	xmm2, xmm1
+
+	; Calcul des valeurs de la premiere colonne
+	; x {02}
+
+	; Premiere etape, decalage d'un bit vers la gauche
+	pslld	xmm2, 01h
+
+	; Chargement de la valeur de comparaison dans xmm3
+	lea	eax, [mixtable]
+	movups  xmm3, [eax]
+
+	; Realisation de la comparaison xmm3 > xmm2 ? xmm3 = { { FF FF FF FF } : { 00 00 00 00 } , 4 }
+	pcmpgtd	xmm3, xmm2
+
+	; On doit realiser un XOR avec {1b} si un bit est sorti 
+	; (ie : si xmm3{x} = { 00 00 00 00 }
+	lea	eax,[mixtable2]
+	movups	xmm4, [eax]
+	por	xmm3, xxm4
+
+	; Apres l'instruction precedente xmm3 contient :
+	;	- Une ligne FF FF FF FF si il n'y a pas eu de depassement
+	;	- Une Ligne FF FF FF E4 Si il y en a eu un
+	; (soit en inversant : ~(00 00 00 00) ou ( 00 00 00 1b)
+	; On realise donc l'inversion, puis ENFIN le XOR !
+	lea	eax,[ones]
+	movups	xmm5, [eax]
+
+	; xmm3 <= NOT( xmm3 ) AND xmm5
+	andnpd	xmm3, xmm5	
+
+	; Realise le XOR
+	pxor	xmm2, xmm3
+
+	; On dispose de :
+	;	- Colonne 1 dans xmm1
+	;	- Colonne 1 * {02} dans xmm2
+	; On peut alors realiser le calcul matriciel qui va conduire 
+	; a la nouvelle valeur de la colonne
+
+	ret
+endp
+
+;==============================================================================
 ;      Function : ShiftRows : Performs Cyclic Permutation on rows
 ;==============================================================================
 proc ShiftRows_SSSE3
@@ -193,6 +249,34 @@ shiftable 	dd	03020100h
 	  		dd	06050407h
 	  		dd	09080b0ah
 	  		dd	0c0f0e0dh
+
+; Table de comparaison pour detecter la sortie
+; d'un bit de l'octet de base
+mixtable1  db	00h, 00h, 01h, 00h
+	   db	00h, 00h, 01h, 00h
+	   db	00h, 00h, 01h, 00h
+	   db	00h, 00h, 01h, 00h
+
+; Table contenant ~{1b} pour renormalisation
+; du polynome
+mixtable2  db	0ffh, 0ffh, 0ffh, 0e4h
+	   db	0ffh, 0ffh, 0ffh, 0e4h
+	   db	0ffh, 0ffh, 0ffh, 0e4h
+	   db	0ffh, 0ffh, 0ffh, 0e4h
+
+; Table contenant un 1 sur les positions de la matrice
+; de calcul où l'on doit 
+
+ones	   db	0ffh, 0ffh, 0ffh, 0ffh	
+	   db	0ffh, 0ffh, 0ffh, 0ffh	
+	   db	0ffh, 0ffh, 0ffh, 0ffh	
+	   db	0ffh, 0ffh, 0ffh, 0ffh	
+
+; Table de masquage
+mask1	  db	00h, 00h, 00h, 0ffh
+	  db	00h, 00h, 00h, 0ffh
+	  db	00h, 00h, 00h, 0ffh
+	  db	00h, 00h, 00h, 0ffh
 
 msg db 'Hello world!',0xA
 msg_size = $-msg
