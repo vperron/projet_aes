@@ -94,13 +94,55 @@ endp
 ;==============================================================================
 ;      Function : ShiftRows : Performs Cyclic Permutation on rows
 ;==============================================================================
-proc ShiftRows
-	lea	eax, [shiftable]
-	movups	xmm1, [eax]
+proc ShiftRows_SSSE3
+	lea		eax 	, [shiftable]
+	movaps	xmm1 	, [eax]
+	
+	
 	pshufb	xmm0, xmm1
 
 	ret
 endp
+
+; Macro instuction lire 32bits
+macro load32 dest, xmmreg, imm {
+	
+	push 	ebx 				; Sauve ebx
+	pextrw 	ebx, xmmreg, imm+1  ; Extrait les 16bits de poids fort
+	shl 	ebx, 16 			; Les decale en poids fort dans ebx
+	pextrw 	dest, xmmreg, imm 	; 16bits de poids faible
+	or 		dest, ebx 			; Mix des deux
+	pop 	ebx 				; Restauration ebx
+
+}
+
+macro store32 xmmreg, src, imm {
+	pinsrw 	xmmreg, src, imm
+	shr 	src, 16
+	pinsrw 	xmmreg, src, imm+1
+}
+
+macro load_rol_extract xmmreg, imm {
+	load32 	eax, xmmreg, 2*imm
+	rol 	eax, 8*imm
+	store32 xmmreg, eax, 2*imm
+}
+
+; Adaptation pour tous processeurs: on declae successivement dans eax avant de tourner
+proc ShiftRows
+	; On copie xmm0 dans un autre registre
+	movaps 	xmm1, xmm0
+ 	
+	load_rol_extract xmm1,1	
+	load_rol_extract xmm1,2	
+	load_rol_extract xmm1,3	
+
+	movaps 	xmm0, xmm1
+	
+	ret
+
+endp
+	
 
 ;==============================================================================
 ;      Debug Function : DumpState : Extract current state value into Memory
@@ -143,13 +185,14 @@ endp
 
 section '.data' writeable align 16
 ; Acces : [matable+n*octets]
-matable db 	01h, 02h, 03h
-	db	04h 
 
-shiftable db	00h, 03h, 02h, 01h
-	  db	05h, 04h, 07h, 06h
-	  db	0ah, 09h, 08h, 0bh
-	  db	0fh, 0eh, 0dh, 0ch
+; Table des 4 vecteurs de rotation. Sera chargée dans cet ordre.
+; Donc le dernier vecteur ici sera chergé en quatrieme dword de xmm0.
+; Par contre chaque dword indépendamment est considéré en little indian.
+shiftable 	dd	03020100h
+	  		dd	06050407h
+	  		dd	09080b0ah
+	  		dd	0c0f0e0dh
 
 msg db 'Hello world!',0xA
 msg_size = $-msg
