@@ -22,11 +22,15 @@
 
 
 
-u32 StateOne[4] = { 
-	0xabcdabcd,
+u32 StateOne[4] = {
+       /* 0xabcdabcd,
 	0x12341234,
 	0x12345678,
-	0x1f2f3f4f
+	0x1f2f3f4f */
+	0xd4e0b81e,
+	0xbfb44127,
+	0x5d521198,
+	0x30aef1e5
 };
 
 u32 StateTwo[4] = { 
@@ -49,7 +53,7 @@ int main(
 	u32 caca = 8;
 
 	c = &caca;
-
+/*
 	printf("/==================================================\n\n");
 	printf("/  PROJET AES          ============================\n\n");
 	printf("/==================================================\n");
@@ -104,7 +108,7 @@ int main(
 	aes_generate_roundkeys( );
 	printf("Generation Terminee ...\n");
 	aes_print_round_keys( );
-
+*/
 	
 
 	printf("Chargement d'une valeur de test dans l'etat\n");
@@ -117,9 +121,9 @@ int main(
 		printf( "Val %i %x\n" , a, StateTwo[a] ); 
 	}
 
-	ShiftRows( );
+	MixColumns( (u32*) StateTwo   );
 
-	DumpState( (u32*) StateTwo );
+	//DumpState( (u32*) StateTwo );
 
 	printf("Test de la valeur chargee :\n");
 	for ( a = 0 ; a < 4 ; a++ ) {
