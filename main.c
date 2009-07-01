@@ -27,10 +27,10 @@ u32 StateOne[4] = {
 	0x12341234,
 	0x12345678,
 	0x1f2f3f4f */
-	0xd4e0b81e,
-	0xbfb44127,
-	0x5d521198,
-	0x30aef1e5
+	0x19a09ae9,
+	0x3df4c6f8,
+	0xe3e28d48,
+	0xbe2b2a08
 };
 
 u32 StateTwo[4] = { 
@@ -102,13 +102,13 @@ int main(
 		printf("present.\n");		
 	else
 		printf("absent.\n");	
-
+*/
 
 	printf("Generation des RoundKeys ...\n");
 	aes_generate_roundkeys( );
 	printf("Generation Terminee ...\n");
 	aes_print_round_keys( );
-*/
+
 	
 
 	printf("Chargement d'une valeur de test dans l'etat\n");
@@ -121,9 +121,17 @@ int main(
 		printf( "Val %i %x\n" , a, StateTwo[a] ); 
 	}
 
+	SubByte( );
+	ShiftRows_SSSE3( );
 	MixColumns( (u32*) StateTwo   );
 
-	//DumpState( (u32*) StateTwo );
+	for ( a = 0 ; a < 4 ; a++ ) {
+		printf( "Val %i %x\n" , a, keys.round_keys[a] ); 
+	}
+
+	AddRoundKey( keys.round_keys + 4 );
+
+	DumpState( (u32*) StateTwo );
 
 	printf("Test de la valeur chargee :\n");
 	for ( a = 0 ; a < 4 ; a++ ) {

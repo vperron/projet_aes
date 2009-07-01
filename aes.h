@@ -33,7 +33,9 @@ u32 ShiftRows( void ) __attribute__ ((cdecl)) ;
 u32 ShiftRows_SSSE3( void ) __attribute__ ((cdecl)) ;
 u32 MixColumns( u32* ) __attribute__ ((cdecl)) ;
 
+void SubByte( void );
 void aes_print_round_keys( void );
 void aes_generate_roundkeys( void );
+u32 aes_SubWord( u32 val );
 
 #endif

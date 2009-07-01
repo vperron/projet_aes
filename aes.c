@@ -67,6 +67,25 @@ const u16 rij_invsbox[] = {
 	0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };	
 
+u32 aes_MemState[4] = {
+	0x0000000,
+	0x0000000,
+	0x0000000,
+	0x0000000
+};
+	
+void SubByte( void ) {
+	u16 i;
+
+	DumpState( (u32*) aes_MemState );
+
+	for ( i = 0 ; i < 4 ; i++ ) {
+		aes_MemState[i]	= aes_SubWord( aes_MemState[i] );
+	}
+
+	SetState( (u32*) aes_MemState );
+}
+
 /* Returns S-Box Substitution performed on halfwords */
 u16 aes_SubBytes( u16 val ) {
 	return	rij_sbox[ val ];
