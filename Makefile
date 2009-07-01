@@ -1,7 +1,7 @@
 CC = gcc
 LD = gcc
 
-CFLAGS = -g -Wall
+CFLAGS = -g -Wall 
 PROGRAM = projaes
 
 OBJS = main.o aes.o aes_sse.o 

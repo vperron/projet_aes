@@ -77,15 +77,21 @@ endp
 ;      MixColumns function : Si je retourne 1 tout va bien...
 ;==============================================================================
 
+macro dstate xmmreg {
+	movups	[edx], xmmreg   
+}
 
 ;==============================================================================
 ;      Function : AddRoundKey : Load Memory-mapped RoundKey and performs encryption
 ;==============================================================================
 proc AddRoundKey, v1
 	mov	eax, [v1]
+	;mov	edx, [v2]
 
 	; Load RoundKey into xmm1
 	movups	xmm1, [eax]
+
+	;dstate	xmm1
 
 	; Performs XOR-based encryption
 	xorps	xmm0, xmm1
@@ -93,20 +99,17 @@ proc AddRoundKey, v1
 	ret
 endp
 
-macro dstate xmmreg {
-	movups	[edx], xmmreg   
-}
 
 ;==============================================================================
 ;      Function : MixColumns
 ;==============================================================================
-proc MixColumns, v1
+proc MixColumns
 	; Chargement de l'etat dans des registres annexes
 	; State => xmm1, xmm2
 	movups	xmm1, xmm0
 	movups	xmm2, xmm1
 
-	mov edx, [v1]
+	; debug : mov edx, [v1]
 
 	; Calcul de etat * {02}
 
@@ -186,7 +189,7 @@ proc MixColumns, v1
 	pxor	xmm0, xmm1
 	pxor	xmm0, xmm5
 
-	dstate 	xmm0
+	; debug : dstate 	xmm0
 
 	; Premiere etape, decalage d'un bit vers la gauche
 	; pslld	xmm2, 01h

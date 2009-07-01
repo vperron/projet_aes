@@ -40,6 +40,15 @@ u32 StateTwo[4] = {
 	0x00000000
 };
 
+u32 PlainText[4] = { 
+	0x328831e0,
+	0x435a3137,
+	0xf6309807,
+	0xa88da234
+};
+
+
+
 /*****************************************************************************/
 int main(
         int argc, 
@@ -53,7 +62,7 @@ int main(
 	u32 caca = 8;
 
 	c = &caca;
-/*
+
 	printf("/==================================================\n\n");
 	printf("/  PROJET AES          ============================\n\n");
 	printf("/==================================================\n");
@@ -102,15 +111,13 @@ int main(
 		printf("present.\n");		
 	else
 		printf("absent.\n");	
-*/
+
 
 	printf("Generation des RoundKeys ...\n");
 	aes_generate_roundkeys( );
 	printf("Generation Terminee ...\n");
-	aes_print_round_keys( );
-
-	
-
+	aes_print_round_keys( );	
+/*
 	printf("Chargement d'une valeur de test dans l'etat\n");
 	res = SetState( (u32*) StateOne );
 
@@ -126,10 +133,10 @@ int main(
 	MixColumns( (u32*) StateTwo   );
 
 	for ( a = 0 ; a < 4 ; a++ ) {
-		printf( "Val %i %x\n" , a, keys.round_keys[a] ); 
+		printf( "Val %i %x\n" , a, (keys.round_keys + 4)[a] ); 
 	}
 
-	AddRoundKey( keys.round_keys + 4 );
+	AddRoundKey( keys.round_keys + 4 , StateTwo );
 
 	DumpState( (u32*) StateTwo );
 
@@ -139,8 +146,18 @@ int main(
 	}
 
 	printf("Premier tour d'encodage :\n");
+*/
 
 
+
+	printf("Test D'encodage\n");
+
+	for ( a = 0 ; a < 100 ; a++ ) { 
+		aes_cipher( PlainText );
+	}
 	
+	printf( " %d\n ", a );
+
     return 0;
 }
+
