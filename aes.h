@@ -27,7 +27,7 @@ extern aes_keys keys;
 u32 AesInit(void) __attribute__ ((cdecl)) ;
 u32 SetState( u32* ) __attribute__ ((cdecl)) ;
 u32 DumpState( u32* ) __attribute__ ((cdecl)) ;
-u32 SubBytes( u32 a, u32 b, u32* c ) __attribute__ ((cdecl)) ;
+u32 AsmTest( u32 a, u32 b, u32* c ) __attribute__ ((cdecl)) ;
 u32 AddRoundKey( u32* rndKey ) __attribute__ ((cdecl)) ;
 u32 ShiftRows( void ) __attribute__ ((cdecl)) ;
 u32 ShiftRows_SSSE3( void ) __attribute__ ((cdecl)) ;

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "main.h"
 #include "aes.h"
+#include "cpucycles/cpucycles.h"
 
 #define BIT_SSE      0
 #define BIT_SSE2     1
@@ -55,6 +56,10 @@ int main(
         char ** argv
         )
 {
+
+	long	t;
+	long	t2;
+
 	u32 res;
 	u32 a = 1, b = 2;
 	u32 * c;
@@ -68,7 +73,7 @@ int main(
 	printf("/==================================================\n");
 
 	printf("Test appel fonction ASM :");
-	res = SubBytes(a,b,(u32 *)c);
+	res = AsmTest(a,b,(u32 *)c);
 	printf("a = %d, b = %d\n",a,b);
 	printf("res ( a + b + 1 )  = %d\n",res);
 	printf("*c ( a + b ) = %d\n",*c);
@@ -114,7 +119,10 @@ int main(
 
 
 	printf("Generation des RoundKeys ...\n");
+	t	= cpucycles();
 	aes_generate_roundkeys( );
+	t2	= cpucycles();
+	printf("\nCycles : %d\n", (int) (t2 - t) );
 	printf("Generation Terminee ...\n");
 	aes_print_round_keys( );	
 /*
@@ -148,14 +156,24 @@ int main(
 	printf("Premier tour d'encodage :\n");
 */
 
-
+	t	= cpucycles();
 
 	printf("Test D'encodage\n");
+	printf("Test D'encodage\n");
+	printf("Test D'encodage\n");
 
-	for ( a = 0 ; a < 100 ; a++ ) { 
+
+	for ( a = 0 ; a < 1 ; a++ ) { 
 		aes_cipher( PlainText );
 	}
-	
+
+	t2	= cpucycles();
+
+	printf( "Test CLK %d\n", (int) (t2 - t)  );
+
+
+	aes_ViewState();
+
 	printf( " %d\n ", a );
 
     return 0;

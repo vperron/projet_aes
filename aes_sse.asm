@@ -16,7 +16,7 @@ include 'inc/default.inc'
 ; Exporter les symboles necessaires
 public  SetState
 public  AesInit
-public  SubBytes
+public  AsmTest
 public  DumpState
 public  AddRoundKey
 public	ShiftRows
@@ -74,23 +74,27 @@ endp
 
 
 ;==============================================================================
-;      MixColumns function : Si je retourne 1 tout va bien...
+;      DStateMacro :	Used to dump the State of one XMM register into memory
+;			Debug Purposes only
 ;==============================================================================
-
 macro dstate xmmreg {
 	movups	[edx], xmmreg   
 }
 
 ;==============================================================================
-;      Function : AddRoundKey : Load Memory-mapped RoundKey and performs encryption
+;      Function : AddRoundKey : Load Memory-mapped RoundKey into XMM register
+;				and performs XOR-BASE ciphering
 ;==============================================================================
 proc AddRoundKey, v1
 	mov	eax, [v1]
+
+	;debug
 	;mov	edx, [v2]
 
 	; Load RoundKey into xmm1
 	movups	xmm1, [eax]
 
+	;debug
 	;dstate	xmm1
 
 	; Performs XOR-based encryption
@@ -102,6 +106,11 @@ endp
 
 ;==============================================================================
 ;      Function : MixColumns
+;		  This Function is at the core of the algorithm, it performs
+;		  some polynom based operations on the columns of the state
+;
+;		  XMM register are used here to provide a constant time implemen
+;		  tation of this operation
 ;==============================================================================
 proc MixColumns
 	; Chargement de l'etat dans des registres annexes
@@ -112,7 +121,6 @@ proc MixColumns
 	; debug : mov edx, [v1]
 
 	; Calcul de etat * {02}
-
 	; Teste la necessite de la normalisation
 
 	; xmm6 <= 00 si il faut renormaliser (FF sinon)
@@ -191,55 +199,20 @@ proc MixColumns
 
 	; debug : dstate 	xmm0
 
-	; Premiere etape, decalage d'un bit vers la gauche
-	; pslld	xmm2, 01h
-	;
-	; Chargement de la valeur de comparaison dans xmm3
-	; lea	eax, [mixtable]
-	; movups  xmm3, [eax]
-	;
-	; Realisation de la comparaison xmm3 > xmm2 ? xmm3 = { { FF FF FF FF } : { 00 00 00 00 } , 4 }
-	; pcmpgtd	xmm3, xmm2
-	;
-	; On doit realiser un XOR avec {1b} si un bit est sorti 
-	; (ie : si xmm3{x} = { 00 00 00 00 }
-	; lea	eax,[mixtable2]
-	; movups	xmm4, [eax]
-	; por	xmm3, xxm4
-	;
-	; Apres l'instruction precedente xmm3 contient :
-	;	- Une ligne FF FF FF FF si il n'y a pas eu de depassement
-	;	- Une Ligne FF FF FF E4 Si il y en a eu un
-	; (soit en inversant : ~(00 00 00 00) ou ( 00 00 00 1b)
-	; On realise donc l'inversion, puis ENFIN le XOR !
-	; lea	eax,[ones]
-	; movups	xmm5, [eax]
-	;
-	; xmm3 <= NOT( xmm3 ) AND xmm5
-	; andnpd	xmm3, xmm5	
-	;
-	; Realise le XOR
-	; xor	xmm2, xmm3
-	; On dispose de :
-	;	- Colonne 1 dans xmm1
-	;	- Colonne 1 * {02} dans xmm2
-	; On peut alors realiser le calcul matriciel qui va conduire 
-	; a la nouvelle valeur de la colonne
-
 	ret
 endp
 
 
 ;==============================================================================
 ;      Function : ShiftRows : Performs Cyclic Permutation on rows
+;				@Deprecated since this permutation is performed
+;				during the SubByte Step
 ;==============================================================================
 proc ShiftRows_SSSE3
 	lea		eax 	, [shiftable]
 	movaps	xmm1 	, [eax]
 	
-	
 	pshufb	xmm0, xmm1
-
 	ret
 endp
 
@@ -284,7 +257,7 @@ endp
 	
 
 ;==============================================================================
-;      Debug Function : DumpState : Extract current state value into Memory
+;      DumpState : Extract current state value into Memory
 ;==============================================================================
 proc DumpState, v1
 	mov	edx, [v1]
@@ -294,7 +267,7 @@ proc DumpState, v1
 endp
 
 ;==============================================================================
-;      Debug function : SetState : Load state value from memory
+;      SetState : Load state value from memory
 ;==============================================================================
 proc SetState, v1
 	mov	eax, [v1]
@@ -304,10 +277,9 @@ proc SetState, v1
 endp
 
 ;==============================================================================
-;      Example Function
+;      Example Test Function
 ;==============================================================================
-proc SubBytes, v1, v2, v3
-
+proc AsmTest, v1, v2, v3
 
 	mov	eax, [v1]
 	mov	ebx, [v2]

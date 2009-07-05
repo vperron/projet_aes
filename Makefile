@@ -1,13 +1,16 @@
 CC = gcc
 LD = gcc
 
-CFLAGS = -g -Wall 
+CFLAGS = -g -Wall -m32
+#-O2 
 PROGRAM = projaes
 
-OBJS = main.o aes.o aes_sse.o 
-
+OBJS = main.o aes.o aes_sse.o cpucycles/cpucycles.o
 
 all: $(PROGRAM)
+
+cpucycles/cpucycles.o:
+	env ARCHITECTURE=32 sh cpucycles/do
 
 $(PROGRAM): $(OBJS)
 	$(LD) $^ -o $@

@@ -101,11 +101,23 @@ u32 aes_MemState[4] = {
 	
 void SubByte( void ) {
 	u16 i;
+	u32 tmp;
 
 	DumpState( (u32*) aes_MemState );
 
 	for ( i = 0 ; i < 4 ; i++ ) {
-		aes_MemState[i]	= aes_SubWord( aes_MemState[i] );
+		/* Fetch row from memory */
+		tmp	= aes_MemState[i];
+
+		/* Performs RIJ S-BOX Substitution on row */
+		tmp	= ( rij_sbox[ ( ( tmp & 0xFF000000) >> 24) ] << 24 ) 
+			| ( rij_sbox[ ( ( tmp & 0x00FF0000) >> 16) ] << 16 )
+			| ( rij_sbox[ ( ( tmp & 0x0000FF00) >> 8) ] << 8 )
+			| ( rij_sbox[   ( tmp & 0x000000FF)       ] );
+
+		/* Performs RoBytes Transform on row */
+		tmp	= ( tmp << i*8 ) | ( tmp >> (32 - i*8) );
+		aes_MemState[i]	= tmp;
 	}
 
 	SetState( (u32*) aes_MemState );
@@ -248,14 +260,14 @@ void aes_cipher( u32* plaintext ) {
 	for ( i = 0 ; i < KEY_ROUNDS-1 ; i++ ) {
 
 		SubByte( );
-		ShiftRows_SSSE3( );
+	//	ShiftRows_SSSE3( );
 		MixColumns( );
 		
 		AddRoundKey( ( keys.round_keys + 4*(i+1) ) );
 	}
 
 	SubByte( );
-	ShiftRows_SSSE3( );
+	//ShiftRows_SSSE3( );
 	AddRoundKey( keys.round_keys + 4*KEY_ROUNDS );
 
 /*	aes_ViewState( ); */
