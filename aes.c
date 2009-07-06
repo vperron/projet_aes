@@ -255,19 +255,19 @@ void aes_cipher( u32* plaintext ) {
 
 	SetState( plaintext );
 
+	AesInitXmm( );
+
 	AddRoundKey( (u32 *) keys.round_keys );
 
 	for ( i = 0 ; i < KEY_ROUNDS-1 ; i++ ) {
 
 		SubByte( );
-	//	ShiftRows_SSSE3( );
 		MixColumns( );
 		
 		AddRoundKey( ( keys.round_keys + 4*(i+1) ) );
 	}
 
 	SubByte( );
-	//ShiftRows_SSSE3( );
 	AddRoundKey( keys.round_keys + 4*KEY_ROUNDS );
 
 /*	aes_ViewState( ); */

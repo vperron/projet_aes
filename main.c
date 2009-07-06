@@ -80,7 +80,7 @@ int main(
 
 	printf("Identification processeur	:	\n");
 	res = AesInit();
-	
+/*	
 	printf("SSE	:	");
 	if( res && BIT_SSE)
 		printf("present.\n");	
@@ -117,15 +117,16 @@ int main(
 	else
 		printf("absent.\n");	
 
-
+*/
 	printf("Generation des RoundKeys ...\n");
 	t	= cpucycles();
 	aes_generate_roundkeys( );
 	t2	= cpucycles();
 	printf("\nCycles : %d\n", (int) (t2 - t) );
 	printf("Generation Terminee ...\n");
-	aes_print_round_keys( );	
-/*
+//	aes_print_round_keys( );	
+
+	/*
 	printf("Chargement d'une valeur de test dans l'etat\n");
 	res = SetState( (u32*) StateOne );
 
@@ -154,7 +155,7 @@ int main(
 	}
 
 	printf("Premier tour d'encodage :\n");
-*/
+	*/
 
 	t	= cpucycles();
 
@@ -163,14 +164,14 @@ int main(
 	printf("Test D'encodage\n");
 
 
-	for ( a = 0 ; a < 1 ; a++ ) { 
+
+	for ( a = 0 ; a < 10000000 ; a++ ) { 
 		aes_cipher( PlainText );
 	}
 
 	t2	= cpucycles();
 
 	printf( "Test CLK %d\n", (int) (t2 - t)  );
-
 
 	aes_ViewState();
 

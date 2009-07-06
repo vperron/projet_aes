@@ -22,6 +22,7 @@ public  AddRoundKey
 public	ShiftRows
 public	ShiftRows_SSSE3
 public	MixColumns
+public	AesInitXmm
 
 section '.text' executable
 ;==============================================================================
@@ -105,6 +106,23 @@ endp
 
 
 ;==============================================================================
+;      Function : AesInit
+;		Loads some matrixes from memory into xmm registers in order
+;		to optimize speed
+
+;==============================================================================
+
+proc AesInitXmm
+	lea	eax, [mixtable1]
+	lea	ebx, [mixtable2]
+
+	movaps	xmm7, [eax]
+	movaps	xmm6, [ebx]
+
+	ret
+endp
+
+;==============================================================================
 ;      Function : MixColumns
 ;		  This Function is at the core of the algorithm, it performs
 ;		  some polynom based operations on the columns of the state
@@ -113,89 +131,83 @@ endp
 ;		  tation of this operation
 ;==============================================================================
 proc MixColumns
+	; Preparation des matrices 80808080 de masquage
+	; xmm6 <= 00 si il faut renormaliser (FF sinon)
+	movaps	xmm5, xmm7
+
 	; Chargement de l'etat dans des registres annexes
 	; State => xmm1, xmm2
 	movups	xmm1, xmm0
 	movups	xmm2, xmm1
 
-	; debug : mov edx, [v1]
+	;debug : 
+	;mov edx, [v1]
 
 	; Calcul de etat * {02}
-	; Teste la necessite de la normalisation
+	; Teste la necessite de la renormalisation
 
-	; xmm6 <= 00 si il faut renormaliser (FF sinon)
-	lea	eax, [mixtable1]
-	movups	xmm6, [eax]
-	movups	xmm7, xmm6
+	; xmm7 > xmm2 ?  xmm6 = { 00 } : { 1B }
+	pand	xmm2, xmm5
+	movaps	xmm4, xmm7
 
-	; xmm6 > xmm1 ?  xmm6 = { FF } : { E4 }
-	pand	xmm2, xmm7
-	pcmpeqb	xmm7, xmm2
+	pcmpeqb	xmm5, xmm2
 
-	lea	eax, [mixtable2]
-	movups	xmm2, [eax]
-	pand	xmm7, xmm2
-
-	movups	xmm2, xmm0
+	;movups	xmm2, [eax]
+	pand	xmm5, xmm6
 
 	; Realisation du decalage avant renormalisation 
+	; par le polynome 1b
 	pslld	xmm1, 01h
 
 	; Preparation du masque pour eliminer les bits
 	; decales "en trop"
-	psrlw	xmm6, 07h
+	psrlw	xmm4, 07h
 
 	; Application du masque (fin du left shift)
-	pandn	xmm6, xmm1
+	pandn	xmm4, xmm1
 
 	; A cet stade xmm0 : etat courant
 	; xmm1 : disponible
 	; xmm2 : etat courant
-	; xmm6 : etat decale vers la gauche
-	; xmm7 : matrice des xor
+	; xmm4 : etat decale vers la gauche
+	; xmm5 : matrice des xor
 
-
-	; ici : xmm7 = matrice de {1b}
+	; ici : xmm5 = matrice de {1b}
 	; Realisation du xor
-	movups	xmm2, xmm6
-	pxor	xmm2, xmm7
+	movaps	xmm2, xmm4
+	pxor	xmm2, xmm5
 
-	movups	xmm1, xmm0
-	movups	xmm3, xmm2
+	; Etat * {02} Calculé
 
-	movups	xmm4, xmm0
-	movups	xmm5, xmm0
-	; XMM0 : State
-	; XMM1 : State
-	; XMM2 : State * {02}
-	; XMM3 : State * {02}
-	; XMM4 : State
+	; On passe a l'operation de melange
+	; Ici : xmm0 = state
+	; et xmm2 = state * {02}
 
 	; Reste à calculer : bij = {02} * aij (+) {03} ai+1,j (+) ai+2,j (+) ai+3,j 
-	lea	ebx, [ip2_table]	
-	movups	xmm6, [ebx]
-	lea	eax, [ip1_table]
-	movups	xmm7, [eax]	
+	; On utilise les régistres comme suit :
 
-	pshufb 	xmm4, xmm6	
-	pshufb	xmm3, xmm7
-	pshufb	xmm1, xmm6
-	pshufb	xmm4, xmm7
-	pshufb	xmm5, xmm7
+	; XMM0 : State (xmm0)
+	; XMM1 : State(i+2) (xmm0)
+	; XMM2 : State * {02} (xmm2)
+	; XMM3 : State * {02} (i+1) (xmm2)
+	; XMM4 : State(i+1+2) (xmm0)
+	; XMM5 : State(i+1) (xmm0)
 
-	; XMM0 : State
-	; XMM1 : State(i+2)
-	; XMM2 : State * {02}
-	; XMM3 : State * {02} (i+1)
-	; XMM4 : State(i+1+2)
-	; XMM5 : State(i+1)
+	; decalage x3 = 93
+	; decalage x2 = 4e
+	; decalage x1 = 39
 
+	pshufd	xmm4, xmm0, 093h	
+	pshufd	xmm3, xmm2, 039h
+	pshufd	xmm1, xmm0, 04eh
 	pxor	xmm2, xmm3
 	pxor	xmm1, xmm4
-	movups	xmm0, xmm2
+	pshufd	xmm5, xmm0, 039h
 
+	movaps	xmm0, xmm2
+
+	pxor	xmm1, xmm5
 	pxor	xmm0, xmm1
-	pxor	xmm0, xmm5
 
 	; debug : dstate 	xmm0
 
